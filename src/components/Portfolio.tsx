@@ -472,39 +472,36 @@ const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffs
           href={socialLinks.youtube} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="w-5 h-5 md:w-6 md:h-6 bg-gray-900 flex items-center justify-center hover:bg-gray-800 transition-colors"
+          className="w-5 h-5 md:w-6 md:h-6 bg-white border border-black flex items-center justify-center transition-all duration-300 hover:bg-transparent hover:border-black hover:border-dashed"
           onMouseEnter={() => setIsPanningDisabled(true)}
           onMouseLeave={() => setIsPanningDisabled(false)}
         >
-          <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill="white">
-            <rect width="24" height="24" rx="4" fill="white" fillOpacity="0"/>
-            <path d="M10 15.5V8.5L16 12L10 15.5Z" fill="white"/>
+          <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill="black">
+            <path d="M10 15.5V8.5L16 12L10 15.5Z" fill="black"/>
           </svg>
         </a>
         <a 
           href={socialLinks.instagram} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="w-5 h-5 md:w-6 md:h-6 bg-gray-900 flex items-center justify-center hover:bg-gray-800 transition-colors"
+          className="w-5 h-5 md:w-6 md:h-6 bg-white border border-black flex items-center justify-center transition-all duration-300 hover:bg-transparent hover:border-black hover:border-dashed"
           onMouseEnter={() => setIsPanningDisabled(true)}
           onMouseLeave={() => setIsPanningDisabled(false)}
         >
-          <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill="none">
-            <rect width="24" height="24" fill="#18181b"/>
-            <path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm0 2h10c1.654 0 3 1.346 3 3v10c0 1.654-1.346 3-3 3H7c-1.654 0-3-1.346-3-3V7c0-1.654 1.346-3 3-3zm5 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm6.5-1.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" fill="white"/>
+          <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill="black">
+            <path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm0 2h10c1.654 0 3 1.346 3 3v10c0 1.654-1.346 3-3 3H7c-1.654 0-3-1.346-3-3V7c0-1.654 1.346-3 3-3zm5 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm6.5-1.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" fill="black"/>
           </svg>
         </a>
         <a 
           href={socialLinks.linkedin} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="w-5 h-5 md:w-6 md:h-6 bg-gray-900 flex items-center justify-center hover:bg-gray-800 transition-colors"
+          className="w-5 h-5 md:w-6 md:h-6 bg-white border border-black flex items-center justify-center transition-all duration-300 hover:bg-transparent hover:border-black hover:border-dashed"
           onMouseEnter={() => setIsPanningDisabled(true)}
           onMouseLeave={() => setIsPanningDisabled(false)}
         >
-          <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill="none">
-            <rect width="24" height="24" fill="#18181b"/>
-            <path d="M6.94 19V9.75H4.25V19h2.69ZM5.6 8.56c.86 0 1.39-.57 1.39-1.28-.02-.73-.53-1.28-1.37-1.28-.84 0-1.39.55-1.39 1.28 0 .71.53 1.28 1.36 1.28h.01ZM8.98 19h2.69v-5.13c0-.27.02-.54.1-.73.22-.54.72-1.1 1.56-1.1 1.1 0 1.54.83 1.54 2.05V19h2.69v-5.5c0-2.95-1.57-4.32-3.67-4.32-1.7 0-2.45.94-2.87 1.6h.02V9.75H8.98c.04.86 0 9.25 0 9.25Z" fill="white"/>
+          <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill="black">
+            <path d="M6.94 19V9.75H4.25V19h2.69ZM5.6 8.56c.86 0 1.39-.57 1.39-1.28-.02-.73-.53-1.28-1.37-1.28-.84 0-1.39.55-1.39 1.28 0 .71.53 1.28 1.36 1.28h.01ZM8.98 19h2.69v-5.13c0-.27.02-.54.1-.73.22-.54.72-1.1 1.56-1.1 1.1 0 1.54.83 1.54 2.05V19h2.69v-5.5c0-2.95-1.57-4.32-3.67-4.32-1.7 0-2.45.94-2.87 1.6h.02V9.75H8.98c.04.86 0 9.25 0 9.25Z" fill="black"/>
           </svg>
         </a>
       </div>
