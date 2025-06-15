@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Github, Linkedin, Youtube, Instagram, Twitter, Mail, Edit3 } from 'lucide-react'; // Import social icons and Edit3
 import AboutAdminPanel from './AboutAdminPanel'; // Import the new admin panel component
 import AboutLoginModal from './AboutLoginModal';
+import bgResume from '../assets/bg_resume.png';
 
 interface LogEntry {
   id: number;
@@ -188,7 +189,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
 
     const container = containerRef.current;
     const imageElement = new Image();
-    imageElement.src = "/bg_resume.png";
+    imageElement.src = bgResume;
 
     let scene: THREE.Scene;
     let camera: THREE.PerspectiveCamera;
@@ -231,6 +232,15 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
       cameraRef.current = camera;
       rendererRef.current = renderer;
       meshRef.current = mesh;
+
+      // Load background texture
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load(bgResume, (texture) => {
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(2, 2);
+        scene.background = texture;
+      });
     }
 
     function animate() {
