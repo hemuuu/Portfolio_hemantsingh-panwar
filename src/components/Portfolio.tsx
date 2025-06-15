@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Preloader from './Preloader';
+import { Github, Linkedin, Youtube, Instagram, Twitter } from 'lucide-react';
 
 interface ProjectData {
   id: number;
@@ -24,10 +25,12 @@ interface SocialLinks {
 
 interface PortfolioProps {
   projects: ProjectData[];
-  onOffsetChange?: (offset: { x: number; y: number; z: number }) => void;
-  socialLinks?: SocialLinks;
+  onOffsetChange: (offset: { x: number; y: number; z: number }) => void;
+  socialLinks: SocialLinks;
   isMobile: boolean;
   worldSize: number;
+  onShowAbout: () => void;
+  isAuthenticated: boolean;
 }
 
 const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffsetChange, socialLinks = {
@@ -36,7 +39,7 @@ const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffs
   youtube: '#',
   github: '#',
   twitter: '#'
-}, isMobile, worldSize }) => {
+}, isMobile, worldSize, onShowAbout, isAuthenticated }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [isDraggingMinimap, setIsDraggingMinimap] = useState(false);
@@ -65,6 +68,16 @@ const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffs
   const canvasRef = useRef<HTMLDivElement>(null);
   const minimapRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number>();
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [headerRect, setHeaderRect] = useState<DOMRect | null>(null);
+  const [isHeaderOverlapping, setIsHeaderOverlapping] = useState(false);
+  const [isAboutHovered, setIsAboutHovered] = useState(false);
+  const [isNameHovered, setIsNameHovered] = useState(false);
+  const [aboutText, setAboutText] = useState('About');
+  const [nameText, setNameText] = useState('Hemantsingh Panwar');
+  const aboutIntervalRef = useRef<number | null>(null);
+  const nameIntervalRef = useRef<number | null>(null);
+  const [headerTextColor, setHeaderTextColor] = useState<'dark' | 'light'>('dark');
 
   const mapWidth = 180;
   const mapHeight = 120;
@@ -107,6 +120,57 @@ const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffs
       window.removeEventListener('resize', updateMinimapContentScale);
     };
   }, [worldSize]); // Depend on worldSize as it affects minimap content scaling
+
+  useEffect(() => {
+    const updateHeaderRect = () => {
+      if (headerRef.current) {
+        setHeaderRect(headerRef.current.getBoundingClientRect());
+      }
+    };
+
+    updateHeaderRect(); // Initial call
+    window.addEventListener('resize', updateHeaderRect);
+    return () => window.removeEventListener('resize', updateHeaderRect);
+  }, []);
+
+  useEffect(() => {
+    // Check for overlap between header and projects
+    let overlapping = false;
+    if (headerRect) {
+      for (const project of projects) {
+        const z = project.z + offset.z;
+        const depthScaleReference = isMobile ? 20000 : 3000;
+        const scaleZ = 1 - z / depthScaleReference;
+        
+        // Ensure scaleZ is always positive to avoid inverted rendering causing incorrect overlap checks
+        if (scaleZ <= 0) continue; 
+
+        const px = (project.x + offset.x) * scaleZ + window.innerWidth / 2;
+        const py = (project.y + offset.y) * scaleZ + window.innerHeight / 2;
+
+        const baseWidth = isMobile ? 40 : 280;
+        const baseHeight = isMobile ? 60 : 380;
+        const currentProjectWidth = project.width || baseWidth;
+        const currentProjectHeight = project.height || baseHeight;
+
+        const projectRect = {
+          left: px,
+          top: py,
+          right: px + currentProjectWidth * scaleZ,
+          bottom: py + currentProjectHeight * scaleZ
+        };
+
+        const overlapX = Math.max(0, Math.min(projectRect.right, headerRect.right) - Math.max(projectRect.left, headerRect.left));
+        const overlapY = Math.max(0, Math.min(projectRect.bottom, headerRect.bottom) - Math.max(projectRect.top, headerRect.top));
+        
+        if (overlapX > 0 && overlapY > 0) {
+          overlapping = true;
+          break;
+        }
+      }
+    }
+    setIsHeaderOverlapping(overlapping);
+  }, [headerRect, projects, offset, isMobile]);
 
   // Add smooth movement interpolation
   useEffect(() => {
@@ -449,8 +513,52 @@ const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffs
     return () => window.removeEventListener('mousemove', handleInitialMouseMove);
   }, []);
 
+  // Function to check if a point is over a dark area
+  const isPointOverDarkArea = (x: number, y: number, project: ProjectData, scaleZ: number): boolean => {
+    const px = (project.x + offset.x) * scaleZ + window.innerWidth / 2;
+    const py = (project.y + offset.y) * scaleZ + window.innerHeight / 2;
+    
+    // Check if the point is within the project bounds
+    const baseWidth = isMobile ? 40 : 280;
+    const baseHeight = isMobile ? 60 : 380;
+    const currentProjectWidth = project.width || baseWidth;
+    const currentProjectHeight = project.height || baseHeight;
+    
+    return (
+      x >= px &&
+      x <= px + currentProjectWidth * scaleZ &&
+      y >= py &&
+      y <= py + currentProjectHeight * scaleZ
+    );
+  };
+
+  // Update header text color based on background
+  useEffect(() => {
+    if (headerRect) {
+      const centerX = headerRect.left + headerRect.width / 2;
+      const centerY = headerRect.top + headerRect.height / 2;
+      
+      let isOverDarkArea = false;
+      
+      for (const project of projects) {
+        const z = project.z + offset.z;
+        const depthScaleReference = isMobile ? 20000 : 3000;
+        const scaleZ = 1 - z / depthScaleReference;
+        
+        if (scaleZ <= 0) continue;
+        
+        if (isPointOverDarkArea(centerX, centerY, project, scaleZ)) {
+          isOverDarkArea = true;
+          break;
+        }
+      }
+      
+      setHeaderTextColor(isOverDarkArea ? 'light' : 'dark');
+    }
+  }, [headerRect, projects, offset, isMobile]);
+
   if (isLoading) {
-    return <Preloader />;
+    return <Preloader message="Loading Portfolio..." />;
   }
 
   return (
@@ -476,8 +584,8 @@ const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffs
           onMouseEnter={() => setIsPanningDisabled(true)}
           onMouseLeave={() => setIsPanningDisabled(false)}
         >
-          <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill="black">
-            <path d="M10 15.5V8.5L16 12L10 15.5Z" fill="black"/>
+          <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill={isHeaderOverlapping ? "white" : "black"}>
+            <path d="M10 15.5V8.5L16 12L10 15.5Z" fill={isHeaderOverlapping ? "white" : "black"}/>
           </svg>
         </a>
         <a 
@@ -488,8 +596,8 @@ const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffs
           onMouseEnter={() => setIsPanningDisabled(true)}
           onMouseLeave={() => setIsPanningDisabled(false)}
         >
-          <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill="black">
-            <path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm0 2h10c1.654 0 3 1.346 3 3v10c0 1.654-1.346 3-3 3H7c-1.654 0-3-1.346-3-3V7c0-1.654 1.346-3 3-3zm5 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm6.5-1.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" fill="black"/>
+          <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill={isHeaderOverlapping ? "white" : "black"}>
+            <path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm0 2h10c1.654 0 3 1.346 3 3v10c0 1.654-1.346 3-3 3H7c-1.654 0-3-1.346-3-3V7c0-1.654 1.346-3 3-3zm5 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm6.5-1.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" fill={isHeaderOverlapping ? "white" : "black"}/>
           </svg>
         </a>
         <a 
@@ -500,15 +608,95 @@ const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffs
           onMouseEnter={() => setIsPanningDisabled(true)}
           onMouseLeave={() => setIsPanningDisabled(false)}
         >
-          <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill="black">
-            <path d="M6.94 19V9.75H4.25V19h2.69ZM5.6 8.56c.86 0 1.39-.57 1.39-1.28-.02-.73-.53-1.28-1.37-1.28-.84 0-1.39.55-1.39 1.28 0 .71.53 1.28 1.36 1.28h.01ZM8.98 19h2.69v-5.13c0-.27.02-.54.1-.73.22-.54.72-1.1 1.56-1.1 1.1 0 1.54.83 1.54 2.05V19h2.69v-5.5c0-2.95-1.57-4.32-3.67-4.32-1.7 0-2.45.94-2.87 1.6h.02V9.75H8.98c.04.86 0 9.25 0 9.25Z" fill="black"/>
+          <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill={isHeaderOverlapping ? "white" : "black"}>
+            <path d="M6.94 19V9.75H4.25V19h2.69ZM5.6 8.56c.86 0 1.39-.57 1.39-1.28-.02-.73-.53-1.28-1.37-1.28-.84 0-1.39.55-1.39 1.28 0 .71.53 1.28 1.36 1.28h.01ZM8.98 19h2.69v-5.13c0-.27.02-.54.1-.73.22-.54.72-1.1 1.56-1.1 1.1 0 1.54.83 1.54 2.05V19h2.69v-5.5c0-2.95-1.57-4.32-3.67-4.32-1.7 0-2.45.94-2.87 1.6h.02V9.75H8.98c.04.86 0 9.25 0 9.25Z" fill={isHeaderOverlapping ? "white" : "black"}/>
           </svg>
         </a>
       </div>
 
       {/* Header */}
-      <div className="fixed top-1 left-1/2 mt-2 transform -translate-x-1/2 flex items-center justify-center gap-4 z-[60] md:top-3 select-none">
-        <span className="font-mono text-xs md:text-base text-gray-900">Hemantsingh Panwar</span>
+      <div
+        ref={headerRef}
+        className="fixed top-1 left-1/2 mt-2 transform -translate-x-1/2 flex items-center justify-center gap-4 z-[60] md:top-3 select-none"
+      >
+        <button
+          onClick={() => {
+            onShowAbout();
+          }}
+          onMouseEnter={() => {
+            setIsPanningDisabled(true);
+            setIsAboutHovered(true);
+            let counter = 0;
+            const originalText = 'About';
+            aboutIntervalRef.current = setInterval(() => {
+              let newText = '';
+              for (let i = 0; i < originalText.length; i++) {
+                if (Math.random() < 0.7) {
+                  newText += String.fromCharCode(33 + Math.floor(Math.random() * 94));
+                } else {
+                  newText += originalText[i];
+                }
+              }
+              setAboutText(newText);
+              counter++;
+              if (counter > 10) {
+                clearInterval(aboutIntervalRef.current!);
+                aboutIntervalRef.current = null;
+                setAboutText(originalText);
+              }
+            }, 50);
+          }}
+          onMouseLeave={() => {
+            setIsPanningDisabled(false);
+            setIsAboutHovered(false);
+            if (aboutIntervalRef.current) {
+              clearInterval(aboutIntervalRef.current);
+              aboutIntervalRef.current = null;
+            }
+            setAboutText('About');
+          }}
+          className={`font-mono text-xs md:text-base cursor-pointer hover:underline text-gray-500`}
+        >
+          {aboutText}
+        </button>
+        <button 
+          className={`font-mono text-xs md:text-base text-gray-800`}
+          onClick={() => window.location.reload()}
+          onMouseEnter={() => {
+            setIsPanningDisabled(true);
+            setIsNameHovered(true);
+            let counter = 0;
+            const originalText = 'Hemantsingh Panwar';
+            nameIntervalRef.current = setInterval(() => {
+              let newText = '';
+              for (let i = 0; i < originalText.length; i++) {
+                if (Math.random() < 0.7) {
+                  newText += String.fromCharCode(33 + Math.floor(Math.random() * 94));
+                } else {
+                  newText += originalText[i];
+                }
+              }
+              setNameText(newText);
+              counter++;
+              if (counter > 10) {
+                clearInterval(nameIntervalRef.current!);
+                nameIntervalRef.current = null;
+                setNameText(originalText);
+              }
+            }, 50);
+          }}
+          onMouseLeave={() => {
+            setIsPanningDisabled(false);
+            setIsNameHovered(false);
+            if (nameIntervalRef.current) {
+              clearInterval(nameIntervalRef.current);
+              nameIntervalRef.current = null;
+            }
+            setNameText('Hemantsingh Panwar');
+          }}
+        >
+          {nameText}
+        </button>
       </div>
 
       {/* Center Buttons */}
@@ -538,7 +726,7 @@ const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffs
         onClick={handleShuffle}
         onMouseEnter={() => setIsPanningDisabled(true)}
         onMouseLeave={() => setIsPanningDisabled(false)}
-        className="fixed bottom-8 left-3 px-3 py-2 bg-white border border-gray-800 font-mono text-xs text-gray-800 transition-all duration-300 flex items-center gap-1.5 z-[60] hover:bg-gray-50 hover:-translate-y-0.5 md:bottom-16 md:left-5 select-none"
+        className="fixed bottom-8 left-3 px-3 bg-white border border-gray-800 font-mono text-xs text-gray-800 transition-all duration-300 flex items-center gap-1.5 z-[60] hover:bg-gray-50 hover:-translate-y-0.5 md:bottom-16 md:left-5 select-none"
       >
         <span className="text-lg">⚂</span>
         <span className="hidden md:inline">SHUFFLE</span>
@@ -595,10 +783,29 @@ const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffs
           const py = (project.y + offset.y) * scaleZ + window.innerHeight / 2;
 
           // Use individual project width/height or default to desktop values for calculations
-          const baseWidth = isMobile ? 40 : 280; // Even smaller base width for mobile
-          const baseHeight = isMobile ? 60 : 380; // Even smaller base height for mobile
+          const baseWidth = isMobile ? 40 : 280;
+          const baseHeight = isMobile ? 60 : 380;
           const currentProjectWidth = project.width || baseWidth;
           const currentProjectHeight = project.height || baseHeight;
+
+          // Calculate project bounding box (relative to viewport)
+          const projectRect = {
+            left: px,
+            top: py,
+            right: px + currentProjectWidth * scaleZ,
+            bottom: py + currentProjectHeight * scaleZ
+          };
+
+          // Check for overlap with header
+          let isInverted = false;
+          if (headerRect) {
+            const overlapX = Math.max(0, Math.min(projectRect.right, headerRect.right) - Math.max(projectRect.left, headerRect.left));
+            const overlapY = Math.max(0, Math.min(projectRect.bottom, headerRect.bottom) - Math.max(projectRect.top, headerRect.top));
+            
+            if (overlapX > 0 && overlapY > 0) {
+              isInverted = true;
+            }
+          }
 
           const dx = mousePos.x - (px + (currentProjectWidth / 2)); // Calculate distance from center of project
           const dy = mousePos.y - (py + (currentProjectHeight / 2)); // Calculate distance from center of project
