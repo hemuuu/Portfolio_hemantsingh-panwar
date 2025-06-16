@@ -236,10 +236,11 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
       // Load background texture
       const textureLoader = new THREE.TextureLoader();
       textureLoader.load(bgResume, (texture) => {
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(2, 2);
-        scene.background = texture;
+        // These lines caused the issue, removing them.
+        // texture.wrapS = THREE.RepeatWrapping;
+        // texture.wrapT = THREE.RepeatWrapping;
+        // texture.repeat.set(2, 2);
+        // scene.background = texture;
       });
     }
 
