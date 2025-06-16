@@ -381,7 +381,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
 
   return (
     <div 
-      className="relative bg-[#111] text-[#eaeaea] font-mono flex flex-col items-center min-h-screen overflow-y-auto"
+      className="relative bg-[#111] text-[#eaeaea] font-mono flex flex-col items-center justify-center min-h-screen overflow-y-auto"
       style={{ cursor: 'none' }}
     >
       {showLoginModal && (
@@ -489,7 +489,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
       {/* Log Panel - Removed admin trigger */}
       <div className="fixed top-4 right-4 w-[80px] h-[65px] md:w-[180px] md:h-[120px] bg-black/80 border border-gray-700 p-0.5 font-mono z-50 select-none overflow-hidden flex flex-col">
         <div className="flex items-center justify-between mb-0.5">
-          <span className="text-[6px] text-white">WHAT I HAVE DONE</span>
+          <span className="text-[6px] text-white">UPDATES</span>
           <span className="text-[6px] text-gray-500">[ACTIVE]</span>
         </div>
         <div className="relative flex-1 overflow-hidden">
@@ -528,7 +528,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
       </style>
 
       <div 
-        className="max-w-[1000px] w-full flex flex-col md:flex-row justify-between items-center p-10 gap-10"
+        className="max-w-[1000px] w-full flex flex-col md:flex-row justify-center md:justify-between items-center p-10 gap-10"
       >
         <div 
           className={`flex-1 transition-opacity duration-1000 ${showContent ? 'opacity-100' : 'opacity-0'} flex flex-col items-center md:items-start justify-center text-center md:text-left mt-10 md:mt-0`}
