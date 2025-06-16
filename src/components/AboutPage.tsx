@@ -609,7 +609,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
           <div className="flex items-center gap-2 mb-4 justify-center md:justify-end">
             <span className="text-[10px] text-gray-600 font-mono">WORK EXPERIENCE</span>
             <svg 
-              className="w-3 h-3 text-gray-600 rotate-180" 
+              className="w-3 h-3 text-gray-600 rotate-0 md:rotate-180" 
               viewBox="0 0 24 24" 
               fill="none" 
               stroke="currentColor" 
