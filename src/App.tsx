@@ -201,16 +201,27 @@ function App() {
         />
       )}
 
-      {/* Position Display - Removed admin toggle */}
+      {/* Position Display with Admin Toggle */}
       <div 
-        className={`fixed bottom-8 right-3 font-mono text-[10px] px-2 py-1.5 border z-50 min-w-[50px]
+        onClick={() => {
+          if (isAuthenticated) {
+            setIsAdminMode(!isAdminMode);
+          } else {
+            setShowLogin(true);
+          }
+        }}
+        className={`fixed bottom-8 right-3 font-mono text-[10px] px-2 py-1.5 border z-50 min-w-[50px] cursor-pointer hover:bg-gray-50 transition-all duration-300
                    md:bottom-16 md:right-5 md:text-xs md:px-3 md:py-2 md:min-w-30
                    flex flex-col items-start md:flex-row md:items-center md:justify-start md:gap-2 whitespace-nowrap
                    ${showAbout ? 'bg-white border-gray-300 text-gray-800' : 'bg-transparent border-gray-800 text-gray-600'}`}
       >
-        <span>X: {Math.round(offset.x)}</span>
-        <span>Y: {Math.round(offset.y)}</span>
-        <span>Z: {Math.round(offset.z)}</span>
+        {isAdminMode ? 'Exit Admin' : (
+          <>
+            <span>X: {Math.round(offset.x)}</span>
+            <span>Y: {Math.round(offset.y)}</span>
+            <span>Z: {Math.round(offset.z)}</span>
+          </>
+        )}
       </div>
 
       {/* Login Modal */}

@@ -486,8 +486,15 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
       </button>
       </div>
 
-      {/* Log Panel - Removed admin trigger */}
-      <div className="fixed top-4 right-4 w-[80px] h-[65px] md:w-[180px] md:h-[120px] bg-black/80 border border-gray-700 p-0.5 font-mono z-50 select-none overflow-hidden flex flex-col">
+      {/* Log Panel - Re-enabled admin trigger */}
+      <div className="fixed top-4 right-4 w-[80px] h-[65px] md:w-[180px] md:h-[120px] bg-black/80 border border-gray-700 p-0.5 font-mono z-50 select-none overflow-hidden flex flex-col cursor-pointer hover:bg-black/90 transition-colors"
+           onClick={() => {
+             if (isAuthenticated) {
+               setShowAdminPanel(true);
+             } else {
+               setShowLoginModal(true);
+             }
+           }}>
         <div className="flex items-center justify-between mb-0.5">
           <span className="text-[6px] text-white">UPDATES</span>
           <span className="text-[6px] text-gray-500">[ACTIVE]</span>
@@ -582,7 +589,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </div>
-            <div className="flex flex-wrap items-center text-xs">
+            <div className="flex flex-wrap items-center justify-center md:justify-start text-xs">
               {skills.map((skill, index) => (
                 <React.Fragment key={index}>
                   <span className="mr-4 text-white">{skill}</span>
@@ -602,7 +609,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
         />
         
         <div 
-          className={`flex-1 transition-opacity duration-1000 ${showContent ? 'opacity-100' : 'opacity-0'} flex flex-col items-center md:items-end text-center md:text-right`}
+          className={`flex-1 transition-opacity duration-1000 ${showContent ? 'opacity-100' : 'opacity-0'} flex flex-col items-center md:items-end text-center md:text-right mx-auto`}
           style={{ transform: `translate(${-parallaxX}px, ${-parallaxY}px)` }}
         >
           {/* Work Experience Section */}
@@ -624,9 +631,9 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
           <div className="flex flex-col items-center md:items-end text-center md:text-right space-y-4">
             {workExperience.map((exp) => (
               <div key={exp.id}>
-                <h3 className="text-white text-sm font-bold">{exp.title}</h3>
-                <p className="text-gray-400 text-xs">{exp.company} ({exp.period})</p>
-                <p className="text-gray-500 text-[10px] leading-tight mt-1">
+                <h3 className="text-white text-sm font-bold text-center md:text-right">{exp.title}</h3>
+                <p className="text-gray-400 text-xs text-center md:text-right">{exp.company} ({exp.period})</p>
+                <p className="text-gray-500 text-[10px] leading-tight mt-1 text-center md:text-right">
                   {exp.description}
                 </p>
               </div>
