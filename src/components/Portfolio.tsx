@@ -3,7 +3,7 @@ import Preloader from './Preloader';
 import { Github, Linkedin, Youtube, Instagram, Twitter } from 'lucide-react';
 
 interface ProjectData {
-  id: number;
+  id: string;
   name: string;
   description: string;
   link: string;
@@ -31,15 +31,29 @@ interface PortfolioProps {
   worldSize: number;
   onShowAbout: () => void;
   isAuthenticated: boolean;
+  onAdminToggle: () => void;
+  onLogout: () => void;
+  onAboutToggle: () => void;
 }
 
-const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffsetChange, socialLinks = {
+const Portfolio: React.FC<PortfolioProps> = ({
+  projects: initialProjects,
+  onOffsetChange,
+  socialLinks = {
   instagram: '#',
   linkedin: '#',
   youtube: '#',
   github: '#',
-  twitter: '#'
-}, isMobile, worldSize, onShowAbout, isAuthenticated }) => {
+    twitter: '#',
+  },
+  isMobile,
+  worldSize,
+  onShowAbout,
+  isAuthenticated,
+  onAdminToggle,
+  onLogout,
+  onAboutToggle,
+}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [isDraggingMinimap, setIsDraggingMinimap] = useState(false);
@@ -81,6 +95,9 @@ const Portfolio: React.FC<PortfolioProps> = ({ projects: initialProjects, onOffs
 
   const mapWidth = 180;
   const mapHeight = 120;
+
+  const dragTimeoutRef = useRef<number | null>(null);
+  const debounceRef = useRef<number | null>(null);
 
   // Initialize offset based on mobile state
   useEffect(() => {

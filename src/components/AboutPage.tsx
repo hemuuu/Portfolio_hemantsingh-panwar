@@ -4,6 +4,8 @@ import { Github, Linkedin, Youtube, Instagram, Twitter, Mail, Edit3 } from 'luci
 import AboutAdminPanel from './AboutAdminPanel'; // Import the new admin panel component
 import AboutLoginModal from './AboutLoginModal';
 import bgResume from '../assets/bg_resume.png';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 interface LogEntry {
   id: number;
@@ -112,7 +114,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
   // ASCII animation characters
   const asciiChars = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`';
 
-  const animateText = (text: string, setText: (text: string) => void, intervalRef: React.MutableRefObject<number | null>) => {
+  const animateText = (text: string, setText: (text: string) => void, intervalRef: React.MutableRefObject<number | NodeJS.Timeout | null>) => {
     let iterations = 0;
     const maxIterations = 20;
     const originalText = text;
@@ -183,6 +185,31 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
   `;
 
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Fetch About page data from Firestore
+  useEffect(() => {
+    const fetchAboutData = async () => {
+      try {
+        console.log('Fetching About page data from Firebase...');
+        const aboutDoc = await getDoc(doc(db, 'content', 'about'));
+        if (aboutDoc.exists()) {
+          const data = aboutDoc.data();
+          console.log('Firebase data found:', data);
+          setAboutSectionContent(data.aboutText || initialAboutTextContent);
+          setDescriptionContent(data.descriptionText || initialDescriptionTextContent);
+          setLogPanelEntries(data.logEntries || initialLogEntriesContent);
+          setSkills(data.skills || initialSkillsContent);
+          setWorkExperience(data.workExperience || initialWorkExperienceContent);
+        } else {
+          console.log('No Firebase data found, using initial content');
+        }
+      } catch (error) {
+        console.error('Error fetching about data:', error);
+      }
+    };
+
+    fetchAboutData();
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -339,19 +366,44 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
   const parallaxXImage = (mousePosition.x / window.innerWidth - 0.5) * parallaxIntensityImage;
   const parallaxYImage = (mousePosition.y / window.innerHeight - 0.5) * parallaxIntensityImage;
 
-  const handleSaveContent = (
+  const handleSaveContent = async (
     aboutText: string,
     descriptionText: string,
     newLogEntries: LogEntry[],
     newSkills: string[],
     newWorkExperience: WorkExperience[]
   ) => {
-    setAboutSectionContent(aboutText);
-    setDescriptionContent(descriptionText);
-    setLogPanelEntries(newLogEntries);
-    setSkills(newSkills);
-    setWorkExperience(newWorkExperience);
-    setShowAdminPanel(false);
+    try {
+      console.log('Saving About page data to Firebase...', {
+        aboutText,
+        descriptionText,
+        logEntries: newLogEntries.length,
+        skills: newSkills.length,
+        workExperience: newWorkExperience.length
+      });
+      
+      // Save to Firestore
+      await setDoc(doc(db, 'content', 'about'), {
+        aboutText,
+        descriptionText,
+        logEntries: newLogEntries,
+        skills: newSkills,
+        workExperience: newWorkExperience,
+        updatedAt: new Date()
+      });
+
+      console.log('About page data saved successfully to Firebase');
+
+      // Update local state
+      setAboutSectionContent(aboutText);
+      setDescriptionContent(descriptionText);
+      setLogPanelEntries(newLogEntries);
+      setSkills(newSkills);
+      setWorkExperience(newWorkExperience);
+      setShowAdminPanel(false);
+    } catch (error) {
+      console.error('Error saving about content:', error);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -486,15 +538,8 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
       </button>
       </div>
 
-      {/* Log Panel - Re-enabled admin trigger */}
-      <div className="fixed top-4 right-4 w-[80px] h-[65px] md:w-[180px] md:h-[120px] bg-black/80 border border-gray-700 p-0.5 font-mono z-50 select-none overflow-hidden flex flex-col cursor-pointer hover:bg-black/90 transition-colors"
-           onClick={() => {
-             if (isAuthenticated) {
-               setShowAdminPanel(true);
-             } else {
-               setShowLoginModal(true);
-             }
-           }}>
+      {/* Log Panel - Removed admin trigger */}
+      <div className="fixed top-4 right-4 w-[80px] h-[65px] md:w-[180px] md:h-[120px] bg-black/80 border border-gray-700 p-0.5 font-mono z-50 select-none overflow-hidden flex flex-col transition-colors">
         <div className="flex items-center justify-between mb-0.5">
           <span className="text-[6px] text-white">UPDATES</span>
           <span className="text-[6px] text-gray-500">[ACTIVE]</span>
