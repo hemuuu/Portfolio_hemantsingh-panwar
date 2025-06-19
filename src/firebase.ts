@@ -8,13 +8,13 @@ import { getAuth } from 'firebase/auth';
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 // In a production environment, consider storing these in environment variables (e.g., .env file)
 const firebaseConfig = {
-  apiKey: "AIzaSyCRnFUBY7mupHoRT6RRXk9qtmK58eXGoQY",
-  authDomain: "hemantportfolio-f20c8.firebaseapp.com",
-  projectId: "hemantportfolio-f20c8",
-  storageBucket: "hemantportfolio-f20c8.firebasestorage.app",
-  messagingSenderId: "143700992225",
-  appId: "1:143700992225:web:109f8a181534181c9a97a0",
-  measurementId: "G-L9HE4Y272Y"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
