@@ -70,7 +70,7 @@ const AppContent = () => {
   const [offset, setOffset] = useState({ x: 0, y: 0, z: 0 });
   const [isMobile, setIsMobile] = useState(false);
   const [worldSize, setWorldSize] = useState(4000);
-  const [migrationNotification, setMigrationNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' | ''; } | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' | ''; } | null>(null);
   const [socialLinks, setSocialLinks] = useState<SocialLinks>(() => {
     const savedLinks = localStorage.getItem('socialLinks');
     return savedLinks ? JSON.parse(savedLinks) : {
@@ -239,8 +239,10 @@ const AppContent = () => {
       });
       console.log('Project updated successfully in Firestore');
       await fetchProjects(); // Refresh the projects list
+      setNotification({ message: 'Project updated successfully!', type: 'success' });
     } catch (error) {
       console.error("Error updating project:", error);
+      setNotification({ message: 'Error updating project.', type: 'error' });
     }
   };
 
@@ -248,10 +250,12 @@ const AppContent = () => {
     try {
       const projectsCollectionRef = collection(db, "projects");
       const docRef = await addDoc(projectsCollectionRef, newProject);
-      console.log('Project added successfully with ID:', docRef.id);
-      await fetchProjects(); // Refresh the projects list
+      console.log('New project added with ID:', docRef.id);
+      await fetchProjects();
+      setNotification({ message: 'Project created successfully!', type: 'success' });
     } catch (error) {
       console.error("Error adding project:", error);
+      setNotification({ message: 'Error creating project.', type: 'error' });
     }
   };
 
@@ -304,7 +308,7 @@ const AppContent = () => {
 
   // Temporary function to migrate localStorage projects to Firestore
   const migrateLocalStorageProjects = async () => {
-    setMigrationNotification({ message: 'Migrating localStorage projects to Firestore...', type: 'info' });
+    setNotification({ message: 'Migrating localStorage projects to Firestore...', type: 'info' });
     const storedProjects = localStorage.getItem('projects');
     if (storedProjects) {
       const projectsToMigrate = JSON.parse(storedProjects);
@@ -317,8 +321,7 @@ const AppContent = () => {
             await addDoc(projectsCollectionRef, projectData);
           }
           console.log("Projects migrated to Firestore successfully!");
-          setMigrationNotification({ message: 'Projects migrated to Firestore successfully!', type: 'success' });
-          setTimeout(() => setMigrationNotification(null), 3000);
+          setNotification({ message: 'Projects migrated to Firestore successfully!', type: 'success' });
           // Clear localStorage projects after successful migration
           localStorage.removeItem('projects');
           // Refresh projects state
@@ -330,40 +333,35 @@ const AppContent = () => {
           setProjects(projectsList);
         } catch (error) {
           console.error("Error migrating projects to Firestore:", error);
-          setMigrationNotification({ message: `Error migrating projects: ${(error as Error).message}`, type: 'error' });
-          setTimeout(() => setMigrationNotification(null), 5000);
+          setNotification({ message: `Error migrating projects: ${(error as Error).message}`, type: 'error' });
         }
       } else {
         console.log("No projects found in localStorage to migrate.");
-        setMigrationNotification({ message: 'No local projects found to migrate.', type: 'info' });
-        setTimeout(() => setMigrationNotification(null), 3000);
+        setNotification({ message: 'No local projects found to migrate.', type: 'info' });
       }
     } else {
-      setMigrationNotification({ message: 'No local projects found to migrate.', type: 'info' });
-      setTimeout(() => setMigrationNotification(null), 3000);
+      setNotification({ message: 'No local projects found to migrate.', type: 'info' });
     }
   };
 
   // Temporary function to migrate About page content to Firestore
   const migrateAboutContentToFirestore = async () => {
-    setMigrationNotification({ message: 'Migrating About page content to Firestore...', type: 'info' });
+    setNotification({ message: 'Migrating About page content to Firestore...', type: 'info' });
     const aboutDocRef = doc(db, "content", "about");
     try {
       await setDoc(aboutDocRef, initialAboutContent, { merge: true });
       console.log("About page content migrated to Firestore!");
-      setMigrationNotification({ message: 'About page content migrated to Firestore successfully!', type: 'success' });
-      setTimeout(() => setMigrationNotification(null), 3000);
+      setNotification({ message: 'About page content migrated to Firestore successfully!', type: 'success' });
       // Optionally clear local state if you had it, but in this case, we're taking from initial state
     } catch (error) {
       console.error("Error migrating About page content to Firestore:", error);
-      setMigrationNotification({ message: `Error migrating About page content: ${(error as Error).message}`, type: 'error' });
-      setTimeout(() => setMigrationNotification(null), 5000);
+      setNotification({ message: `Error migrating About page content: ${(error as Error).message}`, type: 'error' });
     }
   };
 
   // Function to add dummy projects to Firestore
   const addDummyProjectsToFirestore = async () => {
-    setMigrationNotification({ message: 'Adding 30 dummy projects to Firestore...', type: 'info' });
+    setNotification({ message: 'Adding 30 dummy projects to Firestore...', type: 'info' });
     const projectsCollectionRef = collection(db, "projects");
     try {
       for (let i = 1; i <= 30; i++) {
@@ -382,8 +380,7 @@ const AppContent = () => {
         };
         await addDoc(projectsCollectionRef, dummyProject);
       }
-      setMigrationNotification({ message: '30 dummy projects added successfully!', type: 'success' });
-      setTimeout(() => setMigrationNotification(null), 3000);
+      setNotification({ message: '30 dummy projects added successfully!', type: 'success' });
       // Refresh projects state after adding dummy projects
       const projectSnapshot = await getDocs(projectsCollectionRef);
       const projectsList = projectSnapshot.docs.map(doc => ({
@@ -393,20 +390,31 @@ const AppContent = () => {
       setProjects(projectsList);
     } catch (error) {
       console.error("Error adding dummy projects:", error);
-      setMigrationNotification({ message: `Error adding dummy projects: ${(error as Error).message}`, type: 'error' });
-      setTimeout(() => setMigrationNotification(null), 5000);
+      setNotification({ message: `Error adding dummy projects: ${(error as Error).message}`, type: 'error' });
     }
   };
 
+  // Clear notification after a few seconds
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
   return (
     <div className="min-h-screen bg-gray-100">
-      {migrationNotification && (
-        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-lg shadow-lg text-white font-semibold
-          ${migrationNotification.type === 'success' ? 'bg-green-500' :
-            migrationNotification.type === 'error' ? 'bg-red-500' :
-            'bg-blue-500'}
-        `}>
-          {migrationNotification.message}
+      {notification && (
+        <div
+          className={`fixed top-5 right-5 p-4 rounded-md text-white z-[100] transition-opacity duration-300 ${
+            notification.type === 'success' ? 'bg-green-500' : ''
+          } ${notification.type === 'error' ? 'bg-red-500' : ''} ${
+            notification.type === 'info' ? 'bg-blue-500' : ''
+          }`}
+        >
+          {notification.message}
         </div>
       )}
       {loading ? (

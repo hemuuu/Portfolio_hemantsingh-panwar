@@ -33,15 +33,6 @@ interface AdminPanelProps {
   onSocialLinksUpdate: (links: SocialLinks) => void;
 }
 
-const readFileAsDataURL = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
-
 const AdminPanel: React.FC<AdminPanelProps> = ({
   projects,
   onProjectUpdate,
@@ -57,6 +48,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [uploadMode, setUploadMode] = useState<'url' | 'file'>('url');
+  const [isUploading, setIsUploading] = useState(false);
   const [newProject, setNewProject] = useState<Omit<ProjectData, 'id'> & { id?: string }>({
     name: '',
     description: '',
@@ -132,6 +124,34 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     if (selectedProject?.id === id) {
       setSelectedProject(null);
       setEditingProject(null);
+    }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'portfolio_preset');
+
+    try {
+      const response = await fetch(
+        'https://api.cloudinary.com/v1_1/dmi8dtrcc/image/upload',
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+      const data = await response.json();
+      if (data.secure_url) {
+        return data.secure_url;
+      } else {
+        throw new Error('Image upload failed, no secure_url received.');
+      }
+    } catch (error) {
+      console.error('Error uploading image to Cloudinary:', error);
+      return null;
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -221,225 +241,309 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   <p className="text-center text-gray-500">No projects found.</p>
                 ) : (
                   <ul className="space-y-2">
-              {filteredProjects.map((project) => (
+                    {filteredProjects.map((project) => (
                       <li
-                  key={project.id}
+                        key={project.id}
                         className={`flex items-center justify-between p-3 rounded-md cursor-pointer ${selectedProject?.id === project.id ? 'bg-blue-100' : 'hover:bg-gray-50'}`}
-                  onClick={() => setSelectedProject(project)}
-                >
+                        onClick={() => setSelectedProject(project)}
+                      >
                         <span className="font-medium text-gray-800">{project.name}</span>
                         <div className="flex items-center gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEdit(project);
-                        }}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(project);
+                            }}
                             className="text-blue-600 hover:text-blue-800"
-                      >
-                        <Edit3 size={16} />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(project.id);
-                        }}
+                          >
+                            <Edit3 size={16} />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(project.id);
+                            }}
                             className="text-red-600 hover:text-red-800"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </li>
                     ))}
                   </ul>
                 )}
-                </div>
+              </div>
             </div>
           </div>
 
-          {/* Project Details / Add New Form */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              {isAddingNew ? 'Add New Project' : selectedProject ? 'Edit Project' : 'Select a Project'}
-            </h2>
-            {(isAddingNew || selectedProject) ? (
-              <div className="space-y-4">
+          {/* Project Details / Edit Form */}
+          <div className="bg-white rounded-lg shadow-sm border">
+            {editingProject && (
+              <div className="p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Edit Project</h2>
+                <div className="space-y-4">
                   <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
                     <input
                       type="text"
-                    value={isAddingNew ? newProject.name : (editingProject?.name || '')}
-                    onChange={(e) => isAddingNew ? setNewProject({ ...newProject, name: e.target.value }) : setEditingProject(prev => prev ? { ...prev, name: e.target.value } : null)}
+                      value={editingProject.name}
+                      onChange={(e) => setEditingProject({ ...editingProject, name: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="My Awesome Project"
                     />
                   </div>
                   <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                     <textarea
-                    value={isAddingNew ? newProject.description : (editingProject?.description || '')}
-                    onChange={(e) => isAddingNew ? setNewProject({ ...newProject, description: e.target.value }) : setEditingProject(prev => prev ? { ...prev, description: e.target.value } : null)}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="A brief description of the project."
-                  ></textarea>
+                      value={editingProject.description}
+                      onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24"
+                    />
                   </div>
                   <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Link</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Project Link</label>
                     <input
                       type="url"
-                    value={isAddingNew ? newProject.link : (editingProject?.link || '')}
-                    onChange={(e) => isAddingNew ? setNewProject({ ...newProject, link: e.target.value }) : setEditingProject(prev => prev ? { ...prev, link: e.target.value } : null)}
+                      value={editingProject.link}
+                      onChange={(e) => setEditingProject({ ...editingProject, link: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="https://my-project-url.com"
                     />
                   </div>
-                  <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Thumbnail</label>
-                  <div className="flex items-center gap-2 mb-2">
-                    <button
-                      type="button"
-                      onClick={() => setUploadMode('url')}
-                      className={`px-3 py-1 text-sm rounded-md ${uploadMode === 'url' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                    >
-                      URL
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setUploadMode('file')}
-                      className={`px-3 py-1 text-sm rounded-md ${uploadMode === 'file' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                    >
-                      Upload
-                    </button>
-                </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Thumbnail</label>
+                    <div className="flex items-center gap-2 mb-2">
+                      <button
+                        type="button"
+                        onClick={() => setUploadMode('url')}
+                        className={`px-3 py-1 text-sm rounded-md ${uploadMode === 'url' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                      >
+                        URL
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUploadMode('file')}
+                        className={`px-3 py-1 text-sm rounded-md ${uploadMode === 'file' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                      >
+                        Upload
+                      </button>
+                    </div>
 
-                  {uploadMode === 'file' ? (
-                    <div className="mb-4">
+                    {uploadMode === 'file' ? (
                       <input
                         type="file"
                         accept="image/*"
                         onChange={async (e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            const file = e.target.files[0];
-                            const dataURL = await readFileAsDataURL(file);
-                            console.log('File converted to dataURL:', dataURL.substring(0, 100) + '...');
-                            if (isAddingNew) {
-                              setNewProject({ ...newProject, thumbnail: dataURL });
-                              console.log('New project thumbnail set:', (dataURL || '').substring(0, 100) + '...');
-                            } else if (editingProject) {
-                              setEditingProject({ ...editingProject, thumbnail: dataURL });
-                              console.log('Editing project thumbnail set:', (dataURL || '').substring(0, 100) + '...');
+                          if (e.target.files && e.target.files[0] && editingProject) {
+                            const secureUrl = await handleImageUpload(e.target.files[0]);
+                            if (secureUrl) {
+                              setEditingProject({ ...editingProject, thumbnail: secureUrl });
                             }
                           }
                         }}
                         className="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       />
-                    </div>
-                  ) : (
-                    <div className="mb-4">
+                    ) : (
                       <input
                         type="url"
-                        id="thumbnail"
-                        value={isAddingNew ? newProject.thumbnail || '' : (editingProject?.thumbnail || '')}
+                        value={editingProject.thumbnail || ''}
                         onChange={(e) => {
-                          if (isAddingNew) {
-                            setNewProject({ ...newProject, thumbnail: e.target.value });
-                          } else if (editingProject) {
+                          if (editingProject) {
                             setEditingProject({ ...editingProject, thumbnail: e.target.value });
                           }
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="https://example.com/thumbnail.jpg"
                       />
-                    </div>
-                  )}
-                  
-                  {(isAddingNew && newProject.thumbnail) || (!isAddingNew && editingProject?.thumbnail) ? (
-                    <div className="mt-2 p-2 border border-gray-300 rounded-md bg-gray-50 flex items-center justify-center">
-                      {console.log('Rendering thumbnail with src:', isAddingNew ? (newProject.thumbnail || '').substring(0, 100) + '...' : (editingProject?.thumbnail || '').substring(0, 100) + '...')}
-                      <img
-                        src={isAddingNew ? newProject.thumbnail : (editingProject?.thumbnail || '')}
-                        alt="Thumbnail Preview"
-                        className="max-w-full h-auto max-h-40 object-contain"
-                        onLoad={() => console.log('Thumbnail loaded:', isAddingNew ? newProject.thumbnail : (editingProject?.thumbnail || ''))}
-                        onError={(e) => {
-                          console.error('Thumbnail failed to load:', e.currentTarget.src);
-                          e.currentTarget.src = 'https://via.placeholder.com/150?text=Invalid+Image';
-                        }}
-                      />
-                    </div>
-                  ) : null}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">X Position</label>
-                        <input
-                          type="number"
-                    value={isAddingNew ? newProject.x : (editingProject?.x || 0)}
-                    onChange={(e) => isAddingNew ? setNewProject({ ...newProject, x: parseFloat(e.target.value) }) : setEditingProject(prev => prev ? { ...prev, x: parseFloat(e.target.value) } : null)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    )}
+                    
+                    {editingProject.thumbnail && (
+                      <div className="mt-2 p-2 border border-gray-300 rounded-md bg-gray-50 flex items-center justify-center">
+                        <img
+                          src={editingProject.thumbnail}
+                          alt="Thumbnail Preview"
+                          className="max-w-full h-auto max-h-40 object-contain"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Y Position</label>
-                        <input
-                          type="number"
-                    value={isAddingNew ? newProject.y : (editingProject?.y || 0)}
-                    onChange={(e) => isAddingNew ? setNewProject({ ...newProject, y: parseFloat(e.target.value) }) : setEditingProject(prev => prev ? { ...prev, y: parseFloat(e.target.value) } : null)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Z Position</label>
-                        <input
-                          type="number"
-                    value={isAddingNew ? newProject.z : (editingProject?.z || 0)}
-                    onChange={(e) => isAddingNew ? setNewProject({ ...newProject, z: parseFloat(e.target.value) }) : setEditingProject(prev => prev ? { ...prev, z: parseFloat(e.target.value) } : null)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Width (Optional)</label>
-                  <input
-                    type="number"
-                    value={isAddingNew ? newProject.width || '' : (editingProject?.width || '')}
-                    onChange={(e) => {
-                      const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
-                      isAddingNew ? setNewProject({ ...newProject, width: value }) : setEditingProject(prev => prev ? { ...prev, width: value } : null);
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g. 280"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Height (Optional)</label>
-                  <input
-                    type="number"
-                    value={isAddingNew ? newProject.height || '' : (editingProject?.height || '')}
-                    onChange={(e) => {
-                      const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
-                      isAddingNew ? setNewProject({ ...newProject, height: value }) : setEditingProject(prev => prev ? { ...prev, height: value } : null);
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g. 380"
-                  />
-                    </div>
-                <div className="flex justify-end gap-2 mt-4">
-                  <button
-                    onClick={isAddingNew ? handleSaveNew : handleSave}
-                    className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center gap-2"
-                  >
-                    <Save size={16} />
-                    {isAddingNew ? 'Create Project' : 'Save Changes'}
-                  </button>
-                      <button
-                        onClick={handleCancel}
-                        className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors"
-                      >
-                        Cancel
-                      </button>
+                    )}
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Width</label>
+                    <input
+                      type="number"
+                      value={editingProject.width || ''}
+                      onChange={(e) => setEditingProject({ ...editingProject, width: Number(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Height</label>
+                    <input
+                      type="number"
+                      value={editingProject.height || ''}
+                      onChange={(e) => setEditingProject({ ...editingProject, height: Number(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end gap-3">
+                  <button onClick={handleCancel} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                  <button onClick={handleSave} className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600" disabled={isUploading}>
+                    {isUploading ? 'Uploading...' : 'Save'}
+                  </button>
+                </div>
               </div>
-            ) : (
-              <p className="text-center text-gray-500">Please select a project to edit or click "Add New" to create a new one.</p>
+            )}
+            {isAddingNew && (
+              <div className="p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Add New Project</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+                    <input
+                      type="text"
+                      value={newProject.name}
+                      onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="My Awesome Project"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea
+                      value={newProject.description}
+                      onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="A brief description of the project."
+                    ></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Link</label>
+                    <input
+                      type="url"
+                      value={newProject.link}
+                      onChange={(e) => setNewProject({ ...newProject, link: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="https://my-project-url.com"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Thumbnail</label>
+                    <div className="flex items-center gap-2 mb-2">
+                      <button
+                        type="button"
+                        onClick={() => setUploadMode('url')}
+                        className={`px-3 py-1 text-sm rounded-md ${uploadMode === 'url' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                      >
+                        URL
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUploadMode('file')}
+                        className={`px-3 py-1 text-sm rounded-md ${uploadMode === 'file' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                      >
+                        Upload
+                      </button>
+                    </div>
+
+                    {uploadMode === 'file' ? (
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            const secureUrl = await handleImageUpload(e.target.files[0]);
+                            if (secureUrl) {
+                              setNewProject({ ...newProject, thumbnail: secureUrl });
+                            }
+                          }
+                        }}
+                        className="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      />
+                    ) : (
+                      <input
+                        type="url"
+                        value={newProject.thumbnail || ''}
+                        onChange={(e) => {
+                          if (newProject) {
+                            setNewProject({ ...newProject, thumbnail: e.target.value });
+                          }
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="https://example.com/thumbnail.jpg"
+                      />
+                    )}
+                    
+                    {newProject.thumbnail && (
+                      <div className="mt-2 p-2 border border-gray-300 rounded-md bg-gray-50 flex items-center justify-center">
+                        <img
+                          src={newProject.thumbnail}
+                          alt="Thumbnail Preview"
+                          className="max-w-full h-auto max-h-40 object-contain"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">X Position</label>
+                    <input
+                      type="number"
+                      value={newProject.x}
+                      onChange={(e) => setNewProject({ ...newProject, x: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Y Position</label>
+                    <input
+                      type="number"
+                      value={newProject.y}
+                      onChange={(e) => setNewProject({ ...newProject, y: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Z Position</label>
+                    <input
+                      type="number"
+                      value={newProject.z}
+                      onChange={(e) => setNewProject({ ...newProject, z: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Width (Optional)</label>
+                    <input
+                      type="number"
+                      value={newProject.width || ''}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
+                        setNewProject({ ...newProject, width: value });
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g. 280"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Height (Optional)</label>
+                    <input
+                      type="number"
+                      value={newProject.height || ''}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
+                        setNewProject({ ...newProject, height: value });
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g. 380"
+                    />
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end gap-3">
+                  <button onClick={handleCancel} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                  <button onClick={handleSaveNew} className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600" disabled={isUploading}>
+                    {isUploading ? 'Uploading...' : 'Save'}
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>
