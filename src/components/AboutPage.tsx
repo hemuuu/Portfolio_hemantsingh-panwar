@@ -144,9 +144,9 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
 
   // Default social links for About page (can be passed as prop if dynamic)
   const socialLinks = {
-    instagram: 'https://www.instagram.com/hemuuu11/',
-    linkedin: 'https://www.linkedin.com/in/hemantsingh-panwar-67340b1ab/',
-    youtube: 'https://www.youtube.com/@uncoveredreality',
+    instagram: '#',
+    linkedin: '#',
+    youtube: '#',
     github: '#',
     twitter: '#'
   };
