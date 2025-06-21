@@ -173,7 +173,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
         vec2 diff = center - u_mouse;
         float dist = length(diff);
         float str = smoothstep(0.3, 0.0, dist);
-        vec2 offset = str * -moveDir * 0.2;
+        vec2 offset = str * -moveDir * 0.8;
         vec2 uv = vUv - offset;
 
         vec4 r = texture2D(u_texture, uv + vec2(str * u_aberrationIntensity * 0.01, 0.0));
