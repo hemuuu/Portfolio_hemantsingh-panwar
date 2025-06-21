@@ -89,8 +89,8 @@ const Portfolio: React.FC<PortfolioProps> = ({
   const [isNameHovered, setIsNameHovered] = useState(false);
   const [aboutText, setAboutText] = useState('About');
   const [nameText, setNameText] = useState('Hemantsingh Panwar');
-  const aboutIntervalRef = useRef<number | null>(null);
-  const nameIntervalRef = useRef<number | null>(null);
+  const aboutIntervalRef = useRef<number | NodeJS.Timeout | null>(null);
+  const nameIntervalRef = useRef<number | NodeJS.Timeout | null>(null);
   const [headerTextColor, setHeaderTextColor] = useState<'dark' | 'light'>('dark');
 
   const mapWidth = 180;
@@ -167,8 +167,15 @@ const Portfolio: React.FC<PortfolioProps> = ({
 
         const baseWidth = isMobile ? 40 : 280;
         const baseHeight = isMobile ? 60 : 380;
-        const currentProjectWidth = project.width || baseWidth;
-        const currentProjectHeight = project.height || baseHeight;
+
+        let currentProjectWidth = project.width || baseWidth;
+        let currentProjectHeight = project.height || baseHeight;
+
+        if (isMobile && project.width && project.height) {
+          const scaleFactor = 40 / 280; // Mobile base width / Desktop base width
+          currentProjectWidth = project.width * scaleFactor;
+          currentProjectHeight = project.height * scaleFactor;
+        }
 
         const projectRect = {
           left: px,
@@ -802,8 +809,15 @@ const Portfolio: React.FC<PortfolioProps> = ({
           // Use individual project width/height or default to desktop values for calculations
           const baseWidth = isMobile ? 40 : 280;
           const baseHeight = isMobile ? 60 : 380;
-          const currentProjectWidth = project.width || baseWidth;
-          const currentProjectHeight = project.height || baseHeight;
+
+          let currentProjectWidth = project.width || baseWidth;
+          let currentProjectHeight = project.height || baseHeight;
+
+          if (isMobile && project.width && project.height) {
+            const scaleFactor = 40 / 280; // Mobile base width / Desktop base width
+            currentProjectWidth = project.width * scaleFactor;
+            currentProjectHeight = project.height * scaleFactor;
+          }
 
           // Calculate project bounding box (relative to viewport)
           const projectRect = {
