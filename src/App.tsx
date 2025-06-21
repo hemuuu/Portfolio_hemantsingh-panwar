@@ -74,9 +74,9 @@ const AppContent = () => {
   const [socialLinks, setSocialLinks] = useState<SocialLinks>(() => {
     const savedLinks = localStorage.getItem('socialLinks');
     return savedLinks ? JSON.parse(savedLinks) : {
-      instagram: '#',
-      linkedin: '#',
-      youtube: '#',
+      instagram: 'https://www.instagram.com/hemuuu11/',
+      linkedin: 'https://www.linkedin.com/in/hemantsingh-panwar-67340b1ab/',
+      youtube: 'https://www.youtube.com/@uncoveredreality',
       github: '#',
       twitter: '#'
     };
