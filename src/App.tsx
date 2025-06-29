@@ -224,7 +224,9 @@ const AppContent = () => {
     try {
       const projectDocRef = doc(db, "projects", updatedProject.id);
       console.log('Updating project in Firestore with data:', updatedProject);
-      await updateDoc(projectDocRef, {
+      
+      // Create update object and filter out undefined values
+      const updateData: any = {
         name: updatedProject.name,
         description: updatedProject.description,
         link: updatedProject.link,
@@ -232,11 +234,23 @@ const AppContent = () => {
         x: updatedProject.x,
         y: updatedProject.y,
         z: updatedProject.z,
-        width: updatedProject.width,
-        height: updatedProject.height,
-        status: updatedProject.status,
-        category: updatedProject.category,
-      });
+      };
+
+      // Only include optional fields if they have values
+      if (updatedProject.width !== undefined) {
+        updateData.width = updatedProject.width;
+      }
+      if (updatedProject.height !== undefined) {
+        updateData.height = updatedProject.height;
+      }
+      if (updatedProject.status !== undefined) {
+        updateData.status = updatedProject.status;
+      }
+      if (updatedProject.category !== undefined) {
+        updateData.category = updatedProject.category;
+      }
+
+      await updateDoc(projectDocRef, updateData);
       console.log('Project updated successfully in Firestore');
       await fetchProjects(); // Refresh the projects list
       setNotification({ message: 'Project updated successfully!', type: 'success' });

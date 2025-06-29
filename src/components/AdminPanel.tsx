@@ -12,6 +12,8 @@ interface ProjectData {
   z: number;
   width?: number;
   height?: number;
+  status?: string;
+  category?: string;
 }
 
 interface SocialLinks {
@@ -58,7 +60,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     y: Math.random() * 4000 - 2000,
     z: Math.random() * 1000,
     width: 280,
-    height: 380
+    height: 380,
+    status: undefined,
+    category: undefined
   });
 
   const filteredProjects = projects.filter(project =>
@@ -98,7 +102,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       y: Math.random() * 4000 - 2000,
       z: Math.random() * 1000,
       width: 280,
-      height: 380
+      height: 380,
+      status: undefined,
+      category: undefined
     });
   };
 
@@ -114,7 +120,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       y: Math.random() * 4000 - 2000,
       z: Math.random() * 1000,
       width: 280,
-      height: 380
+      height: 380,
+      status: undefined,
+      category: undefined
     });
     setIsAddingNew(false);
   };
@@ -383,6 +391,35 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select
+                      value={editingProject.status || ''}
+                      onChange={(e) => setEditingProject({ ...editingProject, status: e.target.value || undefined })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Select Status</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Completed">Completed</option>
+                      <option value="On Hold">On Hold</option>
+                      <option value="Planning">Planning</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select
+                      value={editingProject.category || ''}
+                      onChange={(e) => setEditingProject({ ...editingProject, category: e.target.value || undefined })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Select Category</option>
+                      <option value="Web">Web</option>
+                      <option value="Mobile">Mobile</option>
+                      <option value="Design">Design</option>
+                      <option value="Game">Game</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
                   <button onClick={handleCancel} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
@@ -535,6 +572,35 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="e.g. 380"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select
+                      value={newProject.status || ''}
+                      onChange={(e) => setNewProject({ ...newProject, status: e.target.value || undefined })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Select Status</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Completed">Completed</option>
+                      <option value="On Hold">On Hold</option>
+                      <option value="Planning">Planning</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select
+                      value={newProject.category || ''}
+                      onChange={(e) => setNewProject({ ...newProject, category: e.target.value || undefined })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Select Category</option>
+                      <option value="Web">Web</option>
+                      <option value="Mobile">Mobile</option>
+                      <option value="Design">Design</option>
+                      <option value="Game">Game</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
