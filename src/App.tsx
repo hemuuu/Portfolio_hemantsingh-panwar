@@ -263,7 +263,33 @@ const AppContent = () => {
   const handleProjectAdd = async (newProject: Omit<ProjectData, 'id'>) => {
     try {
       const projectsCollectionRef = collection(db, "projects");
-      const docRef = await addDoc(projectsCollectionRef, newProject);
+      
+      // Create project data object and filter out undefined values
+      const projectData: any = {
+        name: newProject.name,
+        description: newProject.description,
+        link: newProject.link,
+        thumbnail: newProject.thumbnail,
+        x: newProject.x,
+        y: newProject.y,
+        z: newProject.z,
+      };
+
+      // Only include optional fields if they have values
+      if (newProject.width !== undefined) {
+        projectData.width = newProject.width;
+      }
+      if (newProject.height !== undefined) {
+        projectData.height = newProject.height;
+      }
+      if (newProject.status !== undefined) {
+        projectData.status = newProject.status;
+      }
+      if (newProject.category !== undefined) {
+        projectData.category = newProject.category;
+      }
+
+      const docRef = await addDoc(projectsCollectionRef, projectData);
       console.log('New project added with ID:', docRef.id);
       await fetchProjects();
       setNotification({ message: 'Project created successfully!', type: 'success' });

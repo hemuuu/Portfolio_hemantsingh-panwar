@@ -60,9 +60,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     y: Math.random() * 4000 - 2000,
     z: Math.random() * 1000,
     width: 280,
-    height: 380,
-    status: undefined,
-    category: undefined
+    height: 380
   });
 
   const filteredProjects = projects.filter(project =>
@@ -102,9 +100,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       y: Math.random() * 4000 - 2000,
       z: Math.random() * 1000,
       width: 280,
-      height: 380,
-      status: undefined,
-      category: undefined
+      height: 380
     });
   };
 
@@ -120,9 +116,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       y: Math.random() * 4000 - 2000,
       z: Math.random() * 1000,
       width: 280,
-      height: 380,
-      status: undefined,
-      category: undefined
+      height: 380
     });
     setIsAddingNew(false);
   };
