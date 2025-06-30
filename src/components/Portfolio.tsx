@@ -342,7 +342,6 @@ const Portfolio: React.FC<PortfolioProps> = ({
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
         
-        // Use dynamically calculated mapScaleX/Y from updateMinimapScale
         const currentMapWidth = minimapRef.current.clientWidth;
         const currentMapHeight = minimapRef.current.clientHeight;
         const dynamicMapScaleX = currentMapWidth / worldSize;
@@ -350,8 +349,8 @@ const Portfolio: React.FC<PortfolioProps> = ({
 
         setTargetOffset(prev => ({
           ...prev,
-          x: Math.max(-worldSize / 2, Math.min(worldSize / 2, (mx / dynamicMapScaleX) - (window.innerWidth / 2))),
-          y: Math.max(-worldSize / 2, Math.min(worldSize / 2, (my / dynamicMapScaleY) - (window.innerHeight / 2)))
+          x: -(mx / dynamicMapScaleX - worldSize / 2),
+          y: -(my / dynamicMapScaleY - worldSize / 2)
         }));
       }
 
@@ -412,8 +411,8 @@ const Portfolio: React.FC<PortfolioProps> = ({
 
         setTargetOffset(prev => ({
           ...prev,
-          x: Math.max(-worldSize / 2, Math.min(worldSize / 2, (mx / dynamicMapScaleX) - (window.innerWidth / 2))),
-          y: Math.max(-worldSize / 2, Math.min(worldSize / 2, (my / dynamicMapScaleY) - (window.innerHeight / 2)))
+          x: -(mx / dynamicMapScaleX - worldSize / 2),
+          y: -(my / dynamicMapScaleY - worldSize / 2)
         }));
       }
     };
@@ -780,8 +779,8 @@ const Portfolio: React.FC<PortfolioProps> = ({
             style={{
               width: `${(window.innerWidth / worldSize) * (minimapRef.current?.clientWidth || mapWidth)}px`,
               height: `${(window.innerHeight / worldSize) * (minimapRef.current?.clientHeight || mapHeight)}px`,
-              left: `${(offset.x + worldSize / 2) * (minimapRef.current?.clientWidth || mapWidth) / worldSize}px`,
-              top: `${(offset.y + worldSize / 2) * (minimapRef.current?.clientHeight || mapHeight) / worldSize}px`
+              left: `${(-offset.x / worldSize + 0.5) * (minimapRef.current?.clientWidth || mapWidth) - ((window.innerWidth / worldSize) * (minimapRef.current?.clientWidth || mapWidth) / 2)}px`,
+              top: `${(-offset.y / worldSize + 0.5) * (minimapRef.current?.clientHeight || mapHeight) - ((window.innerHeight / worldSize) * (minimapRef.current?.clientHeight || mapHeight) / 2)}px`,
             }}
           />
           {projects.map((project) => (
