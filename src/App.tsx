@@ -8,7 +8,7 @@ import Preloader from './components/Preloader';
 import { Settings } from 'lucide-react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import AboutLoginModal from './components/AboutLoginModal';
 
@@ -159,6 +159,7 @@ const AppContent = () => {
     });
 
     fetchProjects(); // Initial fetch on component mount
+    fetchAboutData(); // Initial fetch of About page data
 
     return () => unsubscribe();
   }, []);
@@ -168,14 +169,15 @@ const AppContent = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const adminKey = urlParams.get('admin');
     
-    if (adminKey === 'hemuuuuu11@gmail.com_9623742747') {
-      localStorage.setItem('adminSession', 'true');
-      localStorage.setItem('adminSessionTime', Date.now().toString());
-      setIsAuthenticated(true);
-      
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
-    }
+    // Commented out for security - admin access should require proper authentication
+    // if (adminKey === 'hemuuuuu11@gmail.com_9623742747') {
+    //   localStorage.setItem('adminSession', 'true');
+    //   localStorage.setItem('adminSessionTime', Date.now().toString());
+    //   setIsAuthenticated(true);
+    //   
+    //   const newUrl = window.location.pathname;
+    //   window.history.replaceState({}, '', newUrl);
+    // }
   }, []);
 
   // Function to fetch projects from Firestore
@@ -434,6 +436,29 @@ const AppContent = () => {
     }
   };
 
+  // Function to fetch About page data from Firestore
+  const fetchAboutData = async () => {
+    try {
+      console.log('Fetching About page data from Firebase...');
+      const aboutDoc = await getDoc(doc(db, 'content', 'about'));
+      if (aboutDoc.exists()) {
+        const data = aboutDoc.data();
+        console.log('Firebase About data found:', data);
+        setInitialAboutContent({
+          aboutText: data.aboutText || initialAboutContent.aboutText,
+          descriptionText: data.descriptionText || initialAboutContent.descriptionText,
+          logEntries: data.logEntries || initialAboutContent.logEntries,
+          skills: data.skills || initialAboutContent.skills,
+          workExperience: data.workExperience || initialAboutContent.workExperience,
+        });
+      } else {
+        console.log('No Firebase About data found, using initial content');
+      }
+    } catch (error) {
+      console.error('Error fetching about data:', error);
+    }
+  };
+
   // Clear notification after a few seconds
   useEffect(() => {
     if (notification) {
@@ -523,48 +548,11 @@ const AppContent = () => {
                 element={
                   <ProtectedRoute isAuthenticated={isAuthenticated}>
                     <AboutAdminPanel
-                      initialAboutText="ABOUT"
-                      initialDescriptionText="A creative developer crafting immersive digital experiences through code and design."
-                      initialLogEntries={[
-                        { id: 1, text: 'Led dev. of AI-powered portfolio platform' },
-                        { id: 2, text: 'Developed real-time 3D viz. engine' },
-                        { id: 3, text: 'Created interactive web experiences' },
-                        { id: 4, text: 'Implemented adv. motion tracking' },
-                        { id: 5, text: 'Optimized rendering pipeline' },
-                        { id: 6, text: 'Developed custom shader library' },
-                        { id: 7, text: 'Created responsive design system' },
-                        { id: 8, text: 'Built real-time collaboration' },
-                      ]}
-                      initialSkills={[
-                        'UI/UX',
-                        'MOBILE & WEB DESIGN',
-                        'BRANDING',
-                        'GRAPHIC DESIGN',
-                        'ART DIRECTION'
-                      ]}
-                      initialWorkExperience={[
-                        {
-                          id: 1,
-                          title: 'Senior Web Developer',
-                          company: 'Tech Solutions Inc.',
-                          period: '2020 - 2023',
-                          description: 'Developed and maintained high-traffic web applications, focusing on front-end performance and user experience. Collaborated with cross-functional teams.'
-                        },
-                        {
-                          id: 2,
-                          title: 'Front-End Lead',
-                          company: 'Creative Agency',
-                          period: '2018 - 2020',
-                          description: 'Led a team of front-end developers in creating responsive and interactive websites for various clients. Implemented cutting-edge UI/UX designs.'
-                        },
-                        {
-                          id: 3,
-                          title: 'Junior Developer',
-                          company: 'Startup Innovators',
-                          period: '2016 - 2018',
-                          description: 'Assisted in the development of web applications, contributed to code reviews, and learned best practices in software development. Gained foundational skills.'
-                        }
-                      ]}
+                      initialAboutText={initialAboutContent.aboutText}
+                      initialDescriptionText={initialAboutContent.descriptionText}
+                      initialLogEntries={initialAboutContent.logEntries}
+                      initialSkills={initialAboutContent.skills}
+                      initialWorkExperience={initialAboutContent.workExperience}
                       onSave={async (aboutText, descriptionText, newLogEntries, newSkills, newWorkExperience) => {
                         try {
                           await setDoc(doc(db, 'content', 'about'), {

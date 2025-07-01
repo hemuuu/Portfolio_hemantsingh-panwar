@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { auth } from '../firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 interface AboutLoginModalProps {
   onLogin: () => void;
@@ -10,15 +12,23 @@ const AboutLoginModal: React.FC<AboutLoginModalProps> = ({ onLogin, onClose }) =
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
     
-    if (email === 'hemuuuuu11@gmail.com' && password === '9623742747') {
+    try {
+      console.log('Attempting to sign in with email:', email);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('Sign in successful:', userCredential.user.email);
       onLogin();
-      setError('');
-    } else {
-      setError('Invalid credentials. Please try again.');
+    } catch (error: any) {
+      console.error('Sign in error:', error);
+      setError(error.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,9 +80,10 @@ const AboutLoginModal: React.FC<AboutLoginModalProps> = ({ onLogin, onClose }) =
 
           <button
             type="submit"
-            className="w-full px-4 py-2 bg-[#00ff00] text-black font-bold rounded hover:bg-[#00cc00] transition-colors"
+            disabled={loading}
+            className="w-full px-4 py-2 bg-[#00ff00] text-black font-bold rounded hover:bg-[#00cc00] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
       </div>
