@@ -186,6 +186,9 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
 
   const [showLoginModal, setShowLoginModal] = useState(false);
 
+  // Add hover state for grid mosaic
+  const [isGridMosaic, setIsGridMosaic] = useState(false);
+
   // Fetch About page data from Firestore
   useEffect(() => {
     const fetchAboutData = async () => {
@@ -295,7 +298,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
 
       targetRef.current.x = x;
       targetRef.current.y = y;
-      aberrationRef.current = 1;
+      aberrationRef.current = 0.6;
     }
 
     const loader = new THREE.TextureLoader();
@@ -360,7 +363,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
   }, []);
 
   const parallaxIntensity = 20; // Adjust for stronger/ weaker effect
-  const parallaxIntensityImage = 10; // Adjust for image-specific effect, making it seem closer/further
+  const parallaxIntensityImage = 2; // Adjust for image-specific effect, making it seem closer/further
   const parallaxX = (mousePosition.x / window.innerWidth - 0.5) * parallaxIntensity;
   const parallaxY = (mousePosition.y / window.innerHeight - 0.5) * parallaxIntensity;
   const parallaxXImage = (mousePosition.x / window.innerWidth - 0.5) * parallaxIntensityImage;
@@ -436,6 +439,18 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
       className="relative bg-[#111] text-[#eaeaea] font-mono flex flex-col items-center justify-center min-h-screen overflow-y-auto"
       style={{ cursor: 'none' }}
     >
+      {/* Grid Mosaic Overlay */}
+      {isGridMosaic && (
+        <div
+          className="fixed inset-0 z-[55] pointer-events-none"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(0deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 20px), repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 20px)',
+            mixBlendMode: 'normal',
+          }}
+        />
+      )}
+
       {showLoginModal && (
         <AboutLoginModal
           onLogin={handleLogin}
@@ -585,6 +600,8 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
         <div 
           className={`flex-1 transition-opacity duration-1000 ${showContent ? 'opacity-100' : 'opacity-0'} flex flex-col items-center md:items-start justify-center text-center md:text-left mt-10 md:mt-0`}
           style={{ transform: `translate(${parallaxX}px, ${parallaxY}px)` }}
+          onMouseEnter={() => setIsGridMosaic(true)}
+          onMouseLeave={() => setIsGridMosaic(false)}
         >
           <div className="flex items-center gap-2 mb-2 justify-center md:justify-start">
             <span className="text-[8px] md:text-[10px] text-gray-600 font-mono">{aboutSectionContent}</span>
@@ -602,16 +619,6 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
           </div>
           <h1 
             className="text-xl md:text-3xl text-white font-mono mb-2 text-center md:text-left"
-            onMouseEnter={() => {
-              animateText('Hemantsingh Panwar', setNameText, nameIntervalRef);
-            }}
-            onMouseLeave={() => {
-              if (nameIntervalRef.current) {
-                clearInterval(nameIntervalRef.current);
-                nameIntervalRef.current = null;
-              }
-              setNameText('Hemantsingh Panwar');
-            }}
           >
             {nameText}
           </h1>
@@ -619,6 +626,8 @@ const AboutPage: React.FC<AboutPageProps> = ({ onClose, isAuthenticated, onLogou
 
           <div 
             className="flex flex-col items-center md:items-start font-mono text-gray-600 select-none text-center md:text-left"
+            onMouseEnter={() => setIsGridMosaic(true)}
+            onMouseLeave={() => setIsGridMosaic(false)}
           >
             <div className="flex items-center gap-2 mb-2 justify-center md:justify-start">
               <span className="text-[10px] text-gray-600">Skills</span>

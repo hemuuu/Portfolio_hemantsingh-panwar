@@ -99,6 +99,18 @@ const Portfolio: React.FC<PortfolioProps> = ({
   const dragTimeoutRef = useRef<number | null>(null);
   const debounceRef = useRef<number | null>(null);
 
+  const aboutBtnRef = useRef<HTMLButtonElement>(null);
+  const nameBtnRef = useRef<HTMLButtonElement>(null);
+
+  const aboutChars = aboutText.split("");
+  const nameChars = nameText.split("");
+  const aboutCharRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const nameCharRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const [aboutCharOverlaps, setAboutCharOverlaps] = useState<boolean[]>(Array(aboutChars.length).fill(false));
+  const [nameCharOverlaps, setNameCharOverlaps] = useState<boolean[]>(Array(nameChars.length).fill(false));
+
+  const projectRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   // Initialize offset based on mobile state
   useEffect(() => {
     setOffset({ x: 0, y: 0, z: isMobile ? 3000 : 0 }); // Set Z offset to 3000 for mobile
@@ -151,50 +163,34 @@ const Portfolio: React.FC<PortfolioProps> = ({
   }, []);
 
   useEffect(() => {
-    // Check for overlap between header and projects
-    let overlapping = false;
-    if (headerRect) {
-      for (const project of projects) {
-        const z = project.z + offset.z;
-        const depthScaleReference = isMobile ? 20000 : 3000;
-        const scaleZ = 1 - z / depthScaleReference;
-        
-        // Ensure scaleZ is always positive to avoid inverted rendering causing incorrect overlap checks
-        if (scaleZ <= 0) continue; 
-
-        const px = (project.x + offset.x) * scaleZ + window.innerWidth / 2;
-        const py = (project.y + offset.y) * scaleZ + window.innerHeight / 2;
-
-        const baseWidth = isMobile ? 40 : 280;
-        const baseHeight = isMobile ? 60 : 380;
-
-        let currentProjectWidth = project.width || baseWidth;
-        let currentProjectHeight = project.height || baseHeight;
-
-        if (isMobile && project.width && project.height) {
-          const scaleFactor = 40 / 280; // Mobile base width / Desktop base width
-          currentProjectWidth = project.width * scaleFactor;
-          currentProjectHeight = project.height * scaleFactor;
-        }
-
-        const projectRect = {
-          left: px,
-          top: py,
-          right: px + currentProjectWidth * scaleZ,
-          bottom: py + currentProjectHeight * scaleZ
-        };
-
-        const overlapX = Math.max(0, Math.min(projectRect.right, headerRect.right) - Math.max(projectRect.left, headerRect.left));
-        const overlapY = Math.max(0, Math.min(projectRect.bottom, headerRect.bottom) - Math.max(projectRect.top, headerRect.top));
-        
-        if (overlapX > 0 && overlapY > 0) {
-          overlapping = true;
-          break;
-        }
+    // Per-character overlap detection
+    const newAboutOverlaps = aboutChars.map((_, i) => {
+      const charRect = aboutCharRefs.current[i]?.getBoundingClientRect();
+      if (!charRect) return false;
+      for (let p = 0; p < projects.length; p++) {
+        const projectRect = projectRefs.current[p]?.getBoundingClientRect();
+        if (!projectRect) continue;
+        const overlapX = Math.max(0, Math.min(projectRect.right, charRect.right) - Math.max(projectRect.left, charRect.left));
+        const overlapY = Math.max(0, Math.min(projectRect.bottom, charRect.bottom) - Math.max(projectRect.top, charRect.top));
+        if (overlapX > 0 && overlapY > 0) return true;
       }
-    }
-    setIsHeaderOverlapping(overlapping);
-  }, [headerRect, projects, offset, isMobile]);
+      return false;
+    });
+    setAboutCharOverlaps(newAboutOverlaps);
+    const newNameOverlaps = nameChars.map((_, i) => {
+      const charRect = nameCharRefs.current[i]?.getBoundingClientRect();
+      if (!charRect) return false;
+      for (let p = 0; p < projects.length; p++) {
+        const projectRect = projectRefs.current[p]?.getBoundingClientRect();
+        if (!projectRect) continue;
+        const overlapX = Math.max(0, Math.min(projectRect.right, charRect.right) - Math.max(projectRect.left, charRect.left));
+        const overlapY = Math.max(0, Math.min(projectRect.bottom, charRect.bottom) - Math.max(projectRect.top, charRect.top));
+        if (overlapX > 0 && overlapY > 0) return true;
+      }
+      return false;
+    });
+    setNameCharOverlaps(newNameOverlaps);
+  }, [aboutText, nameText, projects, offset, isMobile]);
 
   // Add smooth movement interpolation
   useEffect(() => {
@@ -482,9 +478,14 @@ const Portfolio: React.FC<PortfolioProps> = ({
   }, []);
 
   useEffect(() => {
-    // Update projects when initialProjects changes
-    setProjects(initialProjects);
-  }, [initialProjects]);
+    // Shuffle and randomize positions on each reload or worldSize change
+    setProjects(
+      shuffleArray(initialProjects).map(project => {
+        const pos = getRandomPosition(worldSize);
+        return { ...project, ...pos };
+      })
+    );
+  }, [worldSize]);
 
   // Update parent component when offset changes
   useEffect(() => {
@@ -580,6 +581,25 @@ const Portfolio: React.FC<PortfolioProps> = ({
     }
   }, [headerRect, projects, offset, isMobile]);
 
+  // Utility to shuffle array
+  function shuffleArray<T>(array: T[]): T[] {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // Utility to get random position
+  function getRandomPosition(worldSize: number) {
+    return {
+      x: Math.floor(Math.random() * worldSize) - worldSize / 2,
+      y: Math.floor(Math.random() * worldSize) - worldSize / 2,
+      z: Math.floor(Math.random() * 2000) // or another suitable range
+    };
+  }
+
   if (isLoading) {
     return <Preloader message="Loading Portfolio..." />;
   }
@@ -640,7 +660,7 @@ const Portfolio: React.FC<PortfolioProps> = ({
       {/* Header */}
       <div
         ref={headerRef}
-        className="fixed top-1 left-1/2 mt-2 transform -translate-x-1/2 flex items-center justify-center gap-4 z-[60] md:top-3 select-none"
+        className={`fixed top-1 left-1/2 mt-2 transform -translate-x-1/2 flex items-center justify-center gap-4 z-[60] md:top-3 select-none transition-all duration-300`}
       >
         <button
           onClick={() => {
@@ -678,12 +698,20 @@ const Portfolio: React.FC<PortfolioProps> = ({
             }
             setAboutText('About');
           }}
-          className={`font-mono text-xs md:text-base cursor-pointer hover:underline text-gray-500`}
+          className="font-mono text-xs md:text-base cursor-pointer hover:underline"
         >
-          {aboutText}
+          {aboutChars.map((char, i) => (
+            <span
+              key={i}
+              ref={el => aboutCharRefs.current[i] = el}
+              className={aboutCharOverlaps[i] ? 'text-white' : 'text-gray-500'}
+            >
+              {char}
+            </span>
+          ))}
         </button>
         <button 
-          className={`font-mono text-xs md:text-base text-gray-800`}
+          className="font-mono text-xs md:text-base"
           onClick={() => window.location.reload()}
           onMouseEnter={() => {
             setIsPanningDisabled(true);
@@ -718,7 +746,15 @@ const Portfolio: React.FC<PortfolioProps> = ({
             setNameText('Hemantsingh Panwar');
           }}
         >
-          {nameText}
+          {nameChars.map((char, i) => (
+            <span
+              key={i}
+              ref={el => nameCharRefs.current[i] = el}
+              className={nameCharOverlaps[i] ? 'text-white' : 'text-gray-800'}
+            >
+              {char}
+            </span>
+          ))}
         </button>
       </div>
 
@@ -863,6 +899,7 @@ const Portfolio: React.FC<PortfolioProps> = ({
               onClick={() => handleProjectClick(project)}
               onMouseEnter={() => setHoveredProject(project)}
               onMouseLeave={() => setHoveredProject(null)}
+              ref={el => projectRefs.current[projects.indexOf(project)] = el}
             >
               <img
                 src={project.thumbnail}
