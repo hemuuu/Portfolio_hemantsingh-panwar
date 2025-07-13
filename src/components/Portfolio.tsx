@@ -111,6 +111,19 @@ const Portfolio: React.FC<PortfolioProps> = ({
 
   const projectRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  // Add state for video modal
+  const [showVideoModal, setShowVideoModal] = useState(false);
+
+  // Add Escape key handler to close modal
+  useEffect(() => {
+    if (!showVideoModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowVideoModal(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showVideoModal]);
+
   // Initialize offset based on mobile state
   useEffect(() => {
     setOffset({ x: 0, y: 0, z: isMobile ? 3000 : 0 }); // Set Z offset to 3000 for mobile
@@ -763,6 +776,7 @@ const Portfolio: React.FC<PortfolioProps> = ({
         <button
           id="showreel-btn"
           className="px-[10px] py-1 bg-blue-500 text-white border-none font-mono text-[0.75rem] md:text-sm font-bold cursor-pointer transition-all duration-300 tracking-normal md:tracking-wider hover:bg-blue-700 hover:-translate-y-0.5 whitespace-nowrap md:px-6 min-w-[60px]"
+          onClick={() => setShowVideoModal(true)}
         >
           SHOW REEL
         </button>
@@ -773,6 +787,68 @@ const Portfolio: React.FC<PortfolioProps> = ({
           ↓
         </button>
       </div>
+
+      {/* Video Modal */}
+      {showVideoModal && (
+        <div className="fixed inset-0 z-[100] bg-black bg-opacity-80 flex items-center justify-center">
+          <div
+            className="relative w-full max-w-3xl mx-auto p-4 animate-showreel-genie"
+            style={{
+              cursor: 'auto',
+              // Animation origin: center of the SHOW REEL button (center of screen)
+              transformOrigin: '50% 55%',
+            } as React.CSSProperties}
+          >
+            <button
+              className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center bg-black rounded-none border-none shadow-lg hover:bg-gray-900 transition"
+              onClick={() => setShowVideoModal(false)}
+              aria-label="Close video"
+              style={{ cursor: 'pointer', zIndex: 10 }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="24" height="24" fill="black"/>
+                <line x1="6" y1="6" x2="18" y2="18" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                <line x1="18" y1="6" x2="6" y2="18" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+            <video
+              src="/showreel.mp4"
+              controls
+              autoPlay
+              className="w-full h-auto rounded-lg shadow-lg bg-black"
+              style={{ maxHeight: '85vh' }}
+            />
+          </div>
+          <style>{`
+            .animate-showreel-genie {
+              animation: showreel-genie 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+              transform-origin: 50% 55%;
+            }
+            @keyframes showreel-genie {
+              0% {
+                opacity: 0;
+                transform: scaleY(0.1) scaleX(0.7) translateY(120px);
+                filter: blur(12px);
+              }
+              40% {
+                opacity: 1;
+                transform: scaleY(1.15) scaleX(0.95) translateY(-10px);
+                filter: blur(2px);
+              }
+              70% {
+                opacity: 1;
+                transform: scaleY(0.98) scaleX(1.03) translateY(2px);
+                filter: blur(0.5px);
+              }
+              100% {
+                opacity: 1;
+                transform: scaleY(1) scaleX(1) translateY(0);
+                filter: blur(0);
+              }
+            }
+          `}</style>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="fixed bottom-1 left-1/2 transform -translate-x-1/2 text-[10px] md:text-xs font-mono text-gray-600 z-50 text-center px-4 md:bottom-3 select-none">

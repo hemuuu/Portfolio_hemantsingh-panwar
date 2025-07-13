@@ -243,38 +243,38 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   <p className="text-center text-gray-500">No projects found.</p>
                 ) : (
                   <ul className="space-y-2">
-                    {filteredProjects.map((project) => (
+              {filteredProjects.map((project) => (
                       <li
-                        key={project.id}
+                  key={project.id}
                         className={`flex items-center justify-between p-3 rounded-md cursor-pointer ${selectedProject?.id === project.id ? 'bg-blue-100' : 'hover:bg-gray-50'}`}
-                        onClick={() => setSelectedProject(project)}
-                      >
+                  onClick={() => setSelectedProject(project)}
+                >
                         <span className="font-medium text-gray-800">{project.name}</span>
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(project);
-                            }}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(project);
+                        }}
                             className="text-blue-600 hover:text-blue-800"
-                          >
-                            <Edit3 size={16} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(project.id);
-                            }}
+                      >
+                        <Edit3 size={16} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(project.id);
+                        }}
                             className="text-red-600 hover:text-red-800"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                       </li>
                     ))}
                   </ul>
                 )}
-              </div>
+                </div>
             </div>
           </div>
 
@@ -474,13 +474,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       >
                         Upload
                       </button>
-                    </div>
+                  </div>
 
                     {uploadMode === 'file' ? (
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
                           if (e.target.files && e.target.files[0]) {
                             const secureUrl = await handleImageUpload(e.target.files[0]);
                             if (secureUrl) {
@@ -513,34 +513,34 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         />
                       </div>
                     )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">X Position</label>
-                    <input
-                      type="number"
+                    </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">X Position</label>
+                        <input
+                          type="number"
                       value={newProject.x}
                       onChange={(e) => setNewProject({ ...newProject, x: parseFloat(e.target.value) })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Y Position</label>
-                    <input
-                      type="number"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Y Position</label>
+                        <input
+                          type="number"
                       value={newProject.y}
                       onChange={(e) => setNewProject({ ...newProject, y: parseFloat(e.target.value) })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Z Position</label>
-                    <input
-                      type="number"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Z Position</label>
+                        <input
+                          type="number"
                       value={newProject.z}
                       onChange={(e) => setNewProject({ ...newProject, z: parseFloat(e.target.value) })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Width (Optional)</label>
                     <input
@@ -554,7 +554,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       placeholder="e.g. 280"
                     />
                   </div>
-                  <div>
+                    <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Height (Optional)</label>
                     <input
                       type="number"
@@ -565,9 +565,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="e.g. 380"
-                    />
-                  </div>
-                  <div>
+                      />
+                    </div>
+                    <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select
                       value={newProject.status || ''}
@@ -580,8 +580,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       <option value="On Hold">On Hold</option>
                       <option value="Planning">Planning</option>
                     </select>
-                  </div>
-                  <div>
+                      </div>
+                      <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                     <select
                       value={newProject.category || ''}
@@ -602,7 +602,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   <button onClick={handleSaveNew} className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600" disabled={isUploading}>
                     {isUploading ? 'Uploading...' : 'Save'}
                   </button>
-                </div>
+              </div>
               </div>
             )}
           </div>
