@@ -113,6 +113,13 @@ const Portfolio: React.FC<PortfolioProps> = ({
 
   // Add state for video modal
   const [showVideoModal, setShowVideoModal] = useState(false);
+  // Add state for video loading
+  const [videoReady, setVideoReady] = useState(false);
+
+  // Reset videoReady when modal opens
+  useEffect(() => {
+    if (showVideoModal) setVideoReady(false);
+  }, [showVideoModal]);
 
   // Add Escape key handler to close modal
   useEffect(() => {
@@ -795,7 +802,6 @@ const Portfolio: React.FC<PortfolioProps> = ({
             className="relative w-full max-w-3xl mx-auto p-4 animate-showreel-genie"
             style={{
               cursor: 'auto',
-              // Animation origin: center of the SHOW REEL button (center of screen)
               transformOrigin: '50% 55%',
             } as React.CSSProperties}
           >
@@ -811,12 +817,26 @@ const Portfolio: React.FC<PortfolioProps> = ({
                 <line x1="18" y1="6" x2="6" y2="18" stroke="white" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </button>
+            {/* Skeleton UI and Spinner while loading */}
+            {!videoReady && (
+              <div className="w-full flex flex-col items-center justify-center" style={{ minHeight: '60vh' }}>
+                <div className="w-full h-[40vh] md:h-[60vh] bg-gray-800 animate-pulse rounded-lg mb-4" />
+                <div className="flex items-center justify-center">
+                  <svg className="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                </div>
+              </div>
+            )}
+            {/* Video only shows when ready */}
             <video
               src="/showreel.mp4"
               controls
               autoPlay
-              className="w-full h-auto rounded-lg shadow-lg bg-black"
-              style={{ maxHeight: '85vh' }}
+              className={`w-full h-auto rounded-lg shadow-lg bg-black transition-opacity duration-300 ${videoReady ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              style={{ maxHeight: '85vh', position: videoReady ? 'static' : 'absolute', top: 0, left: 0 }}
+              onCanPlay={() => setVideoReady(true)}
             />
           </div>
           <style>{`
@@ -1037,6 +1057,8 @@ const Portfolio: React.FC<PortfolioProps> = ({
           );
         })}
       </div>
+      {/* Preload the showreel video (hidden) */}
+      <video src="/showreel.mp4" preload="auto" style={{ display: 'none' }} />
     </div>
   );
 };
