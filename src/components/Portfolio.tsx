@@ -721,7 +721,7 @@ const Portfolio: React.FC<PortfolioProps> = ({
           className="font-mono text-xs md:text-base cursor-pointer hover:underline"
         >
           {aboutChars.map((char, i) => (
-            <span
+        <span 
               key={i}
               ref={el => aboutCharRefs.current[i] = el}
               className={aboutCharOverlaps[i] ? 'text-white' : 'text-gray-500'}
@@ -771,9 +771,9 @@ const Portfolio: React.FC<PortfolioProps> = ({
               key={i}
               ref={el => nameCharRefs.current[i] = el}
               className={nameCharOverlaps[i] ? 'text-white' : 'text-gray-800'}
-            >
+        >
               {char}
-            </span>
+        </span>
           ))}
         </button>
       </div>
