@@ -790,7 +790,10 @@ const Portfolio: React.FC<PortfolioProps> = ({
         <div className="relative group">
           <button
             id="download-btn"
-            className="w-12 h-12 bg-white border-2 border-gray-800 cursor-pointer transition-all duration-300 flex items-center justify-center text-xl text-gray-800 font-bold hover:bg-gray-800 hover:text-white hover:-translate-y-0.5"
+            className="h-12 bg-white border-2 border-gray-800 cursor-pointer transition-all duration-300 flex items-center justify-center text-xl text-gray-800 font-bold hover:bg-gray-800 hover:text-white hover:-translate-y-0.5 overflow-hidden group/button"
+            style={{ width: '3rem' }}
+            onMouseEnter={e => e.currentTarget.style.width = '8rem'}
+            onMouseLeave={e => e.currentTarget.style.width = '3rem'}
             onClick={() => {
               const link = document.createElement('a');
               link.href = '/resume.pdf';
@@ -800,10 +803,9 @@ const Portfolio: React.FC<PortfolioProps> = ({
               document.body.removeChild(link);
             }}
           >
-            ↓
+            <span className="block w-full text-center transition-all duration-300 group-hover/button:hidden">↓</span>
+            <span className="hidden w-full text-center transition-all duration-300 group-hover/button:inline font-mono text-[0.75rem] md:text-sm font-bold tracking-normal md:tracking-wider text-white">RESUME</span>
           </button>
-          {/* Tooltip on hover */}
-          <span className="absolute left-1/2 -top-3 -translate-x-1/2 px-0.5 py-0.5 rounded border border-black border-dashed bg-white text-black text-[7px] font-mono shadow-md opacity-0 pointer-events-none transition-opacity duration-200 group-hover:opacity-100" style={{whiteSpace: 'nowrap', lineHeight: '1.1'}}>Download resume</span>
         </div>
       </div>
 
@@ -1012,6 +1014,7 @@ const Portfolio: React.FC<PortfolioProps> = ({
               <img
                 src={project.thumbnail}
                 alt={project.name}
+                loading="lazy"
                 className={`w-full h-full object-cover transition-all duration-700 ease-out ${isHovered ? 'grayscale-0' : 'grayscale'}`}
                 style={{ imageRendering: 'crisp-edges' }}
                 draggable="false"
