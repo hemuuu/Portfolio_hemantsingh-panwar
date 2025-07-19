@@ -787,12 +787,24 @@ const Portfolio: React.FC<PortfolioProps> = ({
         >
           SHOW REEL
         </button>
-        <button
-          id="download-btn"
-          className="w-12 h-12 bg-white border-2 border-gray-800 cursor-pointer transition-all duration-300 flex items-center justify-center text-xl text-gray-800 font-bold hover:bg-gray-800 hover:text-white hover:-translate-y-0.5"
-        >
-          ↓
-        </button>
+        <div className="relative group">
+          <button
+            id="download-btn"
+            className="w-12 h-12 bg-white border-2 border-gray-800 cursor-pointer transition-all duration-300 flex items-center justify-center text-xl text-gray-800 font-bold hover:bg-gray-800 hover:text-white hover:-translate-y-0.5"
+            onClick={() => {
+              const link = document.createElement('a');
+              link.href = '/resume.pdf';
+              link.download = 'resume.pdf';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }}
+          >
+            ↓
+          </button>
+          {/* Tooltip on hover */}
+          <span className="absolute left-1/2 -top-3 -translate-x-1/2 px-0.5 py-0.5 rounded border border-black border-dashed bg-white text-black text-[7px] font-mono shadow-md opacity-0 pointer-events-none transition-opacity duration-200 group-hover:opacity-100" style={{whiteSpace: 'nowrap', lineHeight: '1.1'}}>Download resume</span>
+        </div>
       </div>
 
       {/* Video Modal */}
